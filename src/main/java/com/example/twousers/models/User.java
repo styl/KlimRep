@@ -15,8 +15,12 @@ public class User {
         return balance;
     }
 
-    public void addBalance(BigDecimal balance) {
+    public void plusBalance(BigDecimal balance) {
         this.balance = this.balance.add(balance);
+    }
+
+    public void minusBalance(BigDecimal balance) {
+        this.balance = this.balance.subtract(balance);
     }
 
     @Override

@@ -1,19 +1,16 @@
 package com.example.twousers.service;
 
 import com.example.twousers.models.User;
-import com.sun.org.apache.xpath.internal.operations.Bool;
-import org.apache.el.parser.BooleanNode;
 import org.springframework.stereotype.Service;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.UUID;
+import java.math.BigDecimal;
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
 
-    private final HashMap<UUID, User> db = new HashMap<>();
+    private final Map<UUID, User> db = new ConcurrentHashMap<>(); //в неск. потоков можем читать
 
     public User addUser() {
         User user = new User();
@@ -33,16 +30,38 @@ public class UserService {
         return db.remove(id) != null;
     }
 
-    public boolean transfer(UUID fromId, UUID toId, Double amount) {
+    public boolean transfer(UUID fromId, UUID toId, BigDecimal amount) {
         try {
-            User fromUser = this.findUser(fromId);
-            User toUser = this.findUser(toId);
+            final User fromUser = this.findUser(fromId);
+            final User toUser = this.findUser(toId);
+
+            User firstUser = fromUser;
+            User secondUser = toUser;
+
             //пошла жара
-            return true;
-        }
-        catch (Exception e) {
+            if (toUser != null && fromUser != null) {
+                //мб дедлок -> сортируем по ID
+
+                if (fromId.compareTo(toId) < 0) {
+                    firstUser = toUser;
+                    secondUser = fromUser;
+                }
+
+                synchronized (firstUser) {
+                    synchronized (secondUser) {
+                        fromUser.minusBalance(amount);
+                        toUser.plusBalance(amount);
+                    }
+                }
+                return true;
+            } else {
+                return false;
+            }
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             return false;
         }
     }
+
+
 }

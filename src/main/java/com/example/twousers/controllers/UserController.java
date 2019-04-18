@@ -23,7 +23,7 @@ public class UserController {
         this.userService = userService;
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/createUser")
+    @RequestMapping(method = RequestMethod.GET, path = "/user/create")
     public String createUser() {
         try {
             return userService.addUser().getAccountId().toString();
@@ -33,19 +33,19 @@ public class UserController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/giveMoney")
+    @RequestMapping(method = RequestMethod.GET, path = "/user/givemoney")
     public ResponseEntity<Void> giveMoney(@RequestParam(value = "user") UUID userId,
                                           @RequestParam(value = "amount") Double amount) {
         try {
             User user = userService.findUser(userId);
-            user.addBalance(BigDecimal.valueOf(amount));
+            user.plusBalance(BigDecimal.valueOf(amount));
             return ResponseEntity.ok(null);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/deleteUser")
+    @RequestMapping(method = RequestMethod.GET, path = "/user/delete")
     public String deleteUser(@RequestParam(value = "id") UUID id) {
         try {
             return String.valueOf(userService.deleteUser(id));
@@ -54,7 +54,7 @@ public class UserController {
         }
     }
 
-    @RequestMapping(method = RequestMethod.GET, path = "/showAll")
+    @RequestMapping(method = RequestMethod.GET, path = "/showall")
     public String showAll() {
         try {
             return userService.getAllUsers().toString();
@@ -66,7 +66,7 @@ public class UserController {
     @RequestMapping(method = RequestMethod.GET, path = "/transfer")
     public ResponseEntity<String> transfer(@RequestParam(value = "from") UUID fromId,
                                          @RequestParam(value = "to") UUID toId,
-                                         @RequestParam(value = "amount") Double amount) {
+                                         @RequestParam(value = "amount") BigDecimal amount) {
         try {
             return ResponseEntity.ok(String.valueOf(userService.transfer(fromId, toId, amount)));
 
